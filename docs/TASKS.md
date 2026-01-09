@@ -7,14 +7,20 @@
 
 ## In Progress
 
-### Investigate Structured Extraction Issue
-- **Started:** January 9, 2025
-- **Context:** Freeform extraction works, but structured extraction (generateObject) returns null
-- **Status:** Non-blocking - freeform extraction is working
+*No tasks currently in progress*
 
 ---
 
 ## Completed This Session (January 9, 2025)
+
+### Session 4 - UX Polish & Bug Fixes
+- [x] Fixed structured extraction (switched from generateObject to generateText with JSON parsing)
+- [x] Added leaderboard/comparison card to benchmark results page (Fastest, Cheapest, Best Value)
+- [x] Built 3-step upload wizard (Upload → Select Models → Analyze)
+- [x] Added existing forms selection support in wizard
+- [x] Fixed $NaN display issue in model prices (interface mismatch between API and frontend)
+- [x] Made formatCost more robust to handle undefined/null/NaN values
+- [x] Tested complete flow with 4 models successfully
 
 ### Session 3 - End-to-End Testing
 - [x] Applied database migration via Supabase SQL Editor
