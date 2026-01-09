@@ -12,6 +12,7 @@ import {
   ChevronRight,
   Zap,
   BarChart3,
+  FolderOpen,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { formatCost } from "@/lib/utils";
@@ -22,6 +23,14 @@ interface UploadedFile {
   status: "pending" | "uploading" | "uploaded" | "error";
   dbId?: string;
   error?: string;
+}
+
+interface ExistingForm {
+  id: string;
+  filename: string;
+  original_name: string;
+  file_size: number;
+  created_at: string;
 }
 
 interface Model {
@@ -42,12 +51,19 @@ export default function UploadPage() {
   const [models, setModels] = useState<Model[]>([]);
   const [selectedModels, setSelectedModels] = useState<string[]>([]);
   const [isRunning, setIsRunning] = useState(false);
+  const [existingForms, setExistingForms] = useState<ExistingForm[]>([]);
+  const [selectedExistingForms, setSelectedExistingForms] = useState<string[]>([]);
 
-  // Fetch available models
+  // Fetch available models and existing forms
   useEffect(() => {
     fetch("/api/models")
       .then((res) => res.json())
       .then((data) => setModels(data.models || []))
+      .catch(console.error);
+
+    fetch("/api/forms")
+      .then((res) => res.json())
+      .then((data) => setExistingForms(data.forms || []))
       .catch(console.error);
   }, []);
 
@@ -131,9 +147,21 @@ export default function UploadPage() {
     );
   };
 
+  const toggleExistingForm = (formId: string) => {
+    setSelectedExistingForms((prev) =>
+      prev.includes(formId)
+        ? prev.filter((id) => id !== formId)
+        : [...prev, formId]
+    );
+  };
+
   const runComparison = async () => {
     const uploadedForms = files.filter((f) => f.status === "uploaded" && f.dbId);
-    if (uploadedForms.length === 0 || selectedModels.length === 0) return;
+    const allFormIds = [
+      ...uploadedForms.map((f) => f.dbId!),
+      ...selectedExistingForms,
+    ];
+    if (allFormIds.length === 0 || selectedModels.length === 0) return;
 
     setIsRunning(true);
 
@@ -144,7 +172,7 @@ export default function UploadPage() {
         body: JSON.stringify({
           name: `Quick Compare - ${new Date().toLocaleString()}`,
           modelIds: selectedModels,
-          formIds: uploadedForms.map((f) => f.dbId),
+          formIds: allFormIds,
         }),
       });
 
@@ -164,6 +192,9 @@ export default function UploadPage() {
     (f) => f.status === "uploaded" && f.dbId
   );
 
+  // Total form count (new uploads + selected existing)
+  const totalFormCount = uploadedWithIds.length + selectedExistingForms.length;
+
   // Estimate cost
   const estimatedCost = selectedModels.reduce((total, modelId) => {
     const model = models.find((m) => m.id === modelId);
@@ -171,7 +202,7 @@ export default function UploadPage() {
     // Estimate: 2000 input, 1000 output tokens per form
     return (
       total +
-      (model.inputPrice * 2 + model.outputPrice * 1) * uploadedWithIds.length
+      (model.inputPrice * 2 + model.outputPrice * 1) * totalFormCount
     );
   }, 0);
 
@@ -202,11 +233,11 @@ export default function UploadPage() {
             <button
               onClick={() => {
                 if (s.key === "upload") setStep("upload");
-                else if (s.key === "select-models" && uploadedCount > 0)
+                else if (s.key === "select-models" && totalFormCount > 0)
                   setStep("select-models");
                 else if (
                   s.key === "analyze" &&
-                  uploadedCount > 0 &&
+                  totalFormCount > 0 &&
                   selectedModels.length > 0
                 )
                   setStep("analyze");
@@ -214,7 +245,7 @@ export default function UploadPage() {
               className={`flex items-center gap-2 rounded-full px-4 py-2 text-sm font-medium transition-all ${
                 step === s.key
                   ? "bg-blue-600 text-white"
-                  : uploadedCount > 0 &&
+                  : totalFormCount > 0 &&
                     (s.key === "upload" ||
                       s.key === "select-models" ||
                       (s.key === "analyze" && selectedModels.length > 0))
@@ -222,9 +253,9 @@ export default function UploadPage() {
                   : "bg-gray-50 text-gray-400"
               }`}
               disabled={
-                (s.key === "select-models" && uploadedCount === 0) ||
+                (s.key === "select-models" && totalFormCount === 0) ||
                 (s.key === "analyze" &&
-                  (uploadedCount === 0 || selectedModels.length === 0))
+                  (totalFormCount === 0 || selectedModels.length === 0))
               }
             >
               <s.icon className="h-4 w-4" />
@@ -284,6 +315,63 @@ export default function UploadPage() {
               Supports: PDF insurance intake forms
             </p>
           </div>
+
+          {/* Existing Forms Section */}
+          {existingForms.length > 0 && (
+            <div className="rounded-xl bg-white p-6 shadow-sm border">
+              <div className="flex items-center gap-2 mb-4">
+                <FolderOpen className="h-5 w-5 text-blue-500" />
+                <h2 className="text-lg font-semibold text-gray-900">
+                  Previously Uploaded Forms ({existingForms.length})
+                </h2>
+              </div>
+              <p className="text-sm text-gray-600 mb-4">
+                Select from your previously uploaded forms or upload new ones above.
+              </p>
+              <div className="grid gap-2 sm:grid-cols-2">
+                {existingForms.map((form) => (
+                  <button
+                    key={form.id}
+                    onClick={() => toggleExistingForm(form.id)}
+                    className={`flex items-center gap-3 p-3 rounded-lg text-left transition-all border-2 ${
+                      selectedExistingForms.includes(form.id)
+                        ? "border-blue-500 bg-blue-50"
+                        : "border-gray-200 hover:border-gray-300 bg-gray-50"
+                    }`}
+                  >
+                    <FileText className="h-8 w-8 text-red-500 flex-shrink-0" />
+                    <div className="flex-1 min-w-0">
+                      <p className="font-medium text-gray-900 truncate">
+                        {form.original_name}
+                      </p>
+                      <p className="text-sm text-gray-500">
+                        {(form.file_size / 1024).toFixed(1)} KB
+                      </p>
+                    </div>
+                    <div
+                      className={`h-5 w-5 rounded-full border-2 flex items-center justify-center flex-shrink-0 ${
+                        selectedExistingForms.includes(form.id)
+                          ? "bg-blue-500 border-blue-500"
+                          : "border-gray-300"
+                      }`}
+                    >
+                      {selectedExistingForms.includes(form.id) && (
+                        <CheckCircle className="h-3 w-3 text-white" />
+                      )}
+                    </div>
+                  </button>
+                ))}
+              </div>
+              {selectedExistingForms.length > 0 && (
+                <div className="mt-4 flex justify-end">
+                  <Button onClick={() => setStep("select-models")}>
+                    Next: Select Models ({selectedExistingForms.length} form{selectedExistingForms.length !== 1 ? 's' : ''} selected)
+                    <ChevronRight className="h-4 w-4 ml-1" />
+                  </Button>
+                </div>
+              )}
+            </div>
+          )}
 
           {/* File List */}
           {files.length > 0 && (
@@ -381,8 +469,8 @@ export default function UploadPage() {
             </h1>
             <p className="mt-2 text-gray-600">
               Choose which AI models to benchmark against your{" "}
-              {uploadedWithIds.length} uploaded form
-              {uploadedWithIds.length > 1 ? "s" : ""}.
+              {totalFormCount} selected form
+              {totalFormCount > 1 ? "s" : ""}.
             </p>
           </div>
 
@@ -462,8 +550,8 @@ export default function UploadPage() {
                   <span className="font-medium">
                     {formatCost(estimatedCost)}
                   </span>{" "}
-                  for {uploadedWithIds.length} form
-                  {uploadedWithIds.length !== 1 ? "s" : ""}
+                  for {totalFormCount} form
+                  {totalFormCount !== 1 ? "s" : ""}
                 </p>
               </div>
               <div className="flex gap-3">
@@ -501,7 +589,7 @@ export default function UploadPage() {
               {/* Forms */}
               <div>
                 <h3 className="text-sm font-medium text-gray-500 uppercase tracking-wide">
-                  Forms to Analyze
+                  Forms to Analyze ({totalFormCount})
                 </h3>
                 <div className="mt-2 space-y-2">
                   {uploadedWithIds.map((f) => (
@@ -511,8 +599,21 @@ export default function UploadPage() {
                     >
                       <FileText className="h-4 w-4 text-red-500" />
                       {f.file.name}
+                      <span className="text-xs text-green-600">(new)</span>
                     </div>
                   ))}
+                  {selectedExistingForms.map((formId) => {
+                    const form = existingForms.find((f) => f.id === formId);
+                    return form ? (
+                      <div
+                        key={formId}
+                        className="flex items-center gap-2 text-gray-900"
+                      >
+                        <FileText className="h-4 w-4 text-red-500" />
+                        {form.original_name}
+                      </div>
+                    ) : null;
+                  })}
                 </div>
               </div>
 
@@ -545,9 +646,9 @@ export default function UploadPage() {
                   </span>
                 </div>
                 <p className="text-sm text-gray-500 mt-1">
-                  {selectedModels.length} models × {uploadedWithIds.length} form
-                  {uploadedWithIds.length !== 1 ? "s" : ""} ={" "}
-                  {selectedModels.length * uploadedWithIds.length} extractions
+                  {selectedModels.length} models × {totalFormCount} form
+                  {totalFormCount !== 1 ? "s" : ""} ={" "}
+                  {selectedModels.length * totalFormCount} extractions
                 </p>
               </div>
             </div>
