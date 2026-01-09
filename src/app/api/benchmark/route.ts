@@ -3,6 +3,7 @@ import { z } from "zod";
 import { createClient } from "@/lib/supabase/server";
 import { extractFull } from "@/lib/ai/extract";
 import { MODELS, calculateCost } from "@/lib/ai/providers";
+import pdfParse from "pdf-parse";
 
 const CreateBenchmarkSchema = z.object({
   name: z.string().optional(),
@@ -154,8 +155,11 @@ async function processBenchmark(
 
       if (!fileData) continue;
 
-      // Convert to base64 or text
-      const content = await fileData.text();
+      // Extract text from PDF using pdf-parse
+      const arrayBuffer = await fileData.arrayBuffer();
+      const buffer = Buffer.from(arrayBuffer);
+      const pdfData = await pdfParse(buffer);
+      const content = pdfData.text;
 
       // Run extraction for each model
       for (const modelId of modelIds) {
