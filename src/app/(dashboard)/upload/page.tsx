@@ -35,10 +35,10 @@ interface ExistingForm {
 
 interface Model {
   id: string;
-  name: string;
+  displayName: string;
   provider: string;
-  inputPrice: number;
-  outputPrice: number;
+  inputCostPer1k: number;
+  outputCostPer1k: number;
 }
 
 type Step = "upload" | "select-models" | "analyze";
@@ -202,14 +202,14 @@ export default function UploadPage() {
     // Estimate: 2000 input, 1000 output tokens per form
     return (
       total +
-      (model.inputPrice * 2 + model.outputPrice * 1) * totalFormCount
+      (model.inputCostPer1k * 2 + model.outputCostPer1k * 1) * totalFormCount
     );
   }, 0);
 
   // Quick select presets
   const selectCheapModels = () => {
     const cheapIds = models
-      .sort((a, b) => a.inputPrice + a.outputPrice - (b.inputPrice + b.outputPrice))
+      .sort((a, b) => a.inputCostPer1k + a.outputCostPer1k - (b.inputCostPer1k + b.outputCostPer1k))
       .slice(0, 4)
       .map((m) => m.id);
     setSelectedModels(cheapIds);
@@ -512,7 +512,7 @@ export default function UploadPage() {
               >
                 <div className="flex items-start justify-between">
                   <div>
-                    <p className="font-semibold text-gray-900">{model.name}</p>
+                    <p className="font-semibold text-gray-900">{model.displayName}</p>
                     <p className="text-xs text-gray-500">{model.provider}</p>
                   </div>
                   <div
@@ -528,10 +528,7 @@ export default function UploadPage() {
                   </div>
                 </div>
                 <p className="mt-2 text-sm text-gray-600">
-                  {formatCost(
-                    (model.inputPrice + model.outputPrice) * 1000
-                  )}
-                  /1K tokens
+                  {formatCost(model.inputCostPer1k + model.outputCostPer1k)}/1K tokens
                 </p>
               </button>
             ))}
@@ -630,7 +627,7 @@ export default function UploadPage() {
                         key={id}
                         className="px-3 py-1 rounded-full bg-blue-100 text-blue-800 text-sm"
                       >
-                        {model?.name || id}
+                        {model?.displayName || id}
                       </span>
                     );
                   })}

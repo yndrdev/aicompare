@@ -5,7 +5,10 @@ export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }
 
-export function formatCost(cost: number): string {
+export function formatCost(cost: number | undefined | null): string {
+  if (cost === undefined || cost === null || isNaN(cost)) {
+    return "$0.00";
+  }
   if (cost < 0.01) {
     return `$${cost.toFixed(6)}`;
   }
