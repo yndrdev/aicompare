@@ -64,7 +64,7 @@ export interface Database {
         };
         Insert: {
           id?: string;
-          user_id: string;
+          user_id?: string;
           filename: string;
           original_name: string;
           file_size: number;
@@ -163,7 +163,7 @@ export interface Database {
         };
         Insert: {
           id?: string;
-          user_id: string;
+          user_id?: string;
           name?: string | null;
           description?: string | null;
           status?:
@@ -293,7 +293,7 @@ export interface Database {
         };
         Insert: {
           id?: string;
-          user_id: string;
+          user_id?: string;
           extraction_result_id: string;
           model_id: string;
           provider: string;
