@@ -38,7 +38,7 @@ export const InsuranceFormSchema = z.object({
   medicalConditions: z.array(z.string()).optional(),
 
   // Additional fields (flexible)
-  additionalFields: z.record(z.string()).optional(),
+  additionalFields: z.record(z.string(), z.string()).optional(),
 });
 
 export type InsuranceFormData = z.infer<typeof InsuranceFormSchema>;
@@ -113,8 +113,8 @@ export async function extractStructured(
     });
 
     const latencyMs = Date.now() - startTime;
-    const inputTokens = result.usage?.promptTokens || 0;
-    const outputTokens = result.usage?.completionTokens || 0;
+    const inputTokens = result.usage?.inputTokens || 0;
+    const outputTokens = result.usage?.outputTokens || 0;
 
     return {
       success: true,
@@ -157,8 +157,8 @@ export async function extractFreeform(
     });
 
     const latencyMs = Date.now() - startTime;
-    const inputTokens = result.usage?.promptTokens || 0;
-    const outputTokens = result.usage?.completionTokens || 0;
+    const inputTokens = result.usage?.inputTokens || 0;
+    const outputTokens = result.usage?.outputTokens || 0;
 
     return {
       success: true,
