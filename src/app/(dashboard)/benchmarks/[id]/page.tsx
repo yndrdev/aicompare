@@ -9,6 +9,10 @@ import {
   XCircle,
   Clock,
   Download,
+  Trophy,
+  Zap,
+  DollarSign,
+  Award,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { formatCost, formatDuration, formatNumber } from "@/lib/utils";
@@ -212,6 +216,117 @@ export default function BenchmarkResultsPage({
           </p>
         </div>
       </div>
+
+      {/* Leaderboard Card - Only show when there are multiple models or completed */}
+      {modelStats.length > 0 && benchmark.status === "completed" && (
+        <div className="rounded-xl bg-gradient-to-br from-amber-50 via-yellow-50 to-orange-50 p-6 shadow-lg border border-amber-200">
+          <div className="flex items-center gap-2 mb-4">
+            <Trophy className="h-6 w-6 text-amber-500" />
+            <h2 className="text-xl font-bold text-gray-900">Leaderboard</h2>
+          </div>
+
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            {/* Speed Winner */}
+            {(() => {
+              const fastestModel = modelStats.length > 0
+                ? modelStats.reduce((prev, curr) =>
+                    curr.avgLatency > 0 && (prev.avgLatency === 0 || curr.avgLatency < prev.avgLatency) ? curr : prev
+                  )
+                : null;
+              return fastestModel && fastestModel.avgLatency > 0 ? (
+                <div className="rounded-lg bg-white p-4 shadow-sm border border-blue-200">
+                  <div className="flex items-center gap-2 text-blue-600 mb-2">
+                    <Zap className="h-5 w-5" />
+                    <span className="text-sm font-semibold uppercase tracking-wide">Fastest</span>
+                  </div>
+                  <p className="text-lg font-bold text-gray-900 truncate">
+                    {fastestModel.modelId.split("/").pop()}
+                  </p>
+                  <p className="text-2xl font-bold text-blue-600">
+                    {formatDuration(fastestModel.avgLatency)}
+                  </p>
+                </div>
+              ) : null;
+            })()}
+
+            {/* Cost Winner */}
+            {(() => {
+              const cheapestModel = modelStats.filter(m => m.totalCost > 0).length > 0
+                ? modelStats.filter(m => m.totalCost > 0).reduce((prev, curr) =>
+                    curr.totalCost < prev.totalCost ? curr : prev
+                  )
+                : null;
+              return cheapestModel ? (
+                <div className="rounded-lg bg-white p-4 shadow-sm border border-green-200">
+                  <div className="flex items-center gap-2 text-green-600 mb-2">
+                    <DollarSign className="h-5 w-5" />
+                    <span className="text-sm font-semibold uppercase tracking-wide">Cheapest</span>
+                  </div>
+                  <p className="text-lg font-bold text-gray-900 truncate">
+                    {cheapestModel.modelId.split("/").pop()}
+                  </p>
+                  <p className="text-2xl font-bold text-green-600">
+                    {formatCost(cheapestModel.totalCost)}
+                  </p>
+                </div>
+              ) : null;
+            })()}
+
+            {/* Best Value (cost per token efficiency) */}
+            {(() => {
+              const modelsWithTokens = modelStats.filter(m => m.totalTokens > 0 && m.totalCost > 0);
+              const bestValueModel = modelsWithTokens.length > 0
+                ? modelsWithTokens.reduce((prev, curr) => {
+                    const prevEfficiency = prev.totalTokens / prev.totalCost;
+                    const currEfficiency = curr.totalTokens / curr.totalCost;
+                    return currEfficiency > prevEfficiency ? curr : prev;
+                  })
+                : null;
+              return bestValueModel ? (
+                <div className="rounded-lg bg-white p-4 shadow-sm border border-purple-200">
+                  <div className="flex items-center gap-2 text-purple-600 mb-2">
+                    <Award className="h-5 w-5" />
+                    <span className="text-sm font-semibold uppercase tracking-wide">Best Value</span>
+                  </div>
+                  <p className="text-lg font-bold text-gray-900 truncate">
+                    {bestValueModel.modelId.split("/").pop()}
+                  </p>
+                  <p className="text-2xl font-bold text-purple-600">
+                    {formatNumber(Math.round(bestValueModel.totalTokens / bestValueModel.totalCost))} tok/$
+                  </p>
+                </div>
+              ) : null;
+            })()}
+          </div>
+
+          {/* Overall Recommendation */}
+          {modelStats.length > 1 && (
+            <div className="mt-4 pt-4 border-t border-amber-200">
+              <div className="flex items-start gap-3 bg-amber-100 rounded-lg p-4">
+                <Trophy className="h-6 w-6 text-amber-600 flex-shrink-0 mt-0.5" />
+                <div>
+                  <p className="font-semibold text-amber-900">Recommendation</p>
+                  <p className="text-sm text-amber-800">
+                    {(() => {
+                      const fastestModel = modelStats.reduce((prev, curr) =>
+                        curr.avgLatency > 0 && (prev.avgLatency === 0 || curr.avgLatency < prev.avgLatency) ? curr : prev
+                      );
+                      const cheapestModel = modelStats.filter(m => m.totalCost > 0).reduce((prev, curr) =>
+                        curr.totalCost < prev.totalCost ? curr : prev
+                      , modelStats[0]);
+
+                      if (fastestModel.modelId === cheapestModel.modelId) {
+                        return `${fastestModel.modelId.split("/").pop()} is both the fastest and cheapest option—clear winner!`;
+                      }
+                      return `Choose ${cheapestModel.modelId.split("/").pop()} for cost savings or ${fastestModel.modelId.split("/").pop()} for speed.`;
+                    })()}
+                  </p>
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
+      )}
 
       {/* Model Comparison Table */}
       <div className="rounded-lg bg-white p-6 shadow">
