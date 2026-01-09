@@ -7,24 +7,53 @@
 
 ## In Progress
 
-### Build Foundation UI and API Routes
+### Manual Setup Steps Required
 - **Started:** January 9, 2025
-- **Context:** Infrastructure complete, need to build actual UI and API endpoints
-- **Files Touched:**
-  - (Not started yet)
-- **Status Notes:** Ready to begin implementation
+- **Context:** Database schema and storage bucket need to be created via Supabase Dashboard
+- **Status:** Ready for manual execution
+
+**Steps to complete:**
+
+1. **Apply Database Migration:**
+   - Go to https://supabase.com/dashboard/project/rstpvkotrasqzwgamuqf/sql/new
+   - Copy contents of `supabase/migrations/20250109_001_initial_schema.sql`
+   - Click "Run" to execute
+
+2. **Create Storage Bucket:**
+   - Go to https://supabase.com/dashboard/project/rstpvkotrasqzwgamuqf/storage/buckets
+   - Click "New bucket"
+   - Name: `forms`
+   - Public: No (private bucket)
+   - Click "Create bucket"
 
 ---
 
 ## Completed This Session (January 9, 2025)
 
-### Infrastructure Setup
+### Phase 1 UI and API Implementation
+- [x] Created dashboard layout with sidebar navigation
+- [x] Built form upload page with drag-and-drop (react-dropzone)
+- [x] Created models selection page with provider filtering
+- [x] Built benchmarks listing and creation pages
+- [x] Created benchmark results viewing page
+- [x] Built costs analysis page
+- [x] Built history page
+- [x] Built settings page
+- [x] Created API routes:
+  - [x] GET /api/models — List available models
+  - [x] GET /api/forms — List uploaded forms
+  - [x] POST /api/forms/upload — Upload PDF forms
+  - [x] POST /api/extract — Run single extraction
+  - [x] GET/POST /api/benchmark — List/create benchmarks
+  - [x] GET /api/benchmark/[id]/results — Get benchmark results
+- [x] Added OpenRouter API key to Vercel
+- [x] Successfully deployed to Vercel
+
+### Infrastructure Setup (Earlier)
 - [x] Created Supabase project (ID: rstpvkotrasqzwgamuqf)
-- [x] Applied database schema migration (6 tables with RLS)
-- [x] Seeded 22 LLM models from OpenRouter
 - [x] Updated code to use OpenRouter (single API key for all providers)
 - [x] Pushed to GitHub: https://github.com/yndrdev/aicompare
-- [x] Deployed to Vercel: https://ai-comparison.vercel.app
+- [x] Deployed to Vercel
 
 ### Resources Created
 - **Supabase URL:** https://rstpvkotrasqzwgamuqf.supabase.co
@@ -35,99 +64,106 @@
 
 ## Up Next
 
-1. **Create layout and navigation** — Dashboard layout with sidebar
-2. **Build form upload page** — Drag-and-drop PDF upload with Supabase Storage
-3. **Create models API** — List available models from registry
-4. **Build extraction API** — Single form extraction endpoint
-5. **Create benchmark API** — Create and manage benchmark runs
-6. **Build results viewing page** — Display extraction results
+1. ~~Create layout and navigation~~ ✅ Done
+2. ~~Build form upload page~~ ✅ Done
+3. ~~Create models API~~ ✅ Done
+4. ~~Build extraction API~~ ✅ Done
+5. ~~Create benchmark API~~ ✅ Done
+6. ~~Build results viewing page~~ ✅ Done
+7. **Test end-to-end extraction flow** — After manual setup
 
 ---
 
 ## Blocked
 
-None currently.
+### Requires Manual User Action
+- Database migration needs to be run in Supabase SQL Editor
+- Storage bucket needs to be created in Supabase Dashboard
 
 ---
 
-## Completed This Sprint
+## Files Created/Modified This Session
 
-- [x] **Project documentation structure** — Completed January 9, 2025
-- [x] **Requirements gathering from meeting notes** — Completed January 9, 2025
-- [x] **PROJECT-INTERVIEW.md completed** — Completed January 9, 2025
-- [x] **All 9 project docs populated** — Completed January 9, 2025
-- [x] **Next.js project initialized** — Completed January 9, 2025
-- [x] **Vercel AI SDK installed and configured** — Completed January 9, 2025
-- [x] **Provider registry created (15 models)** — Completed January 9, 2025
-- [x] **Extraction service created** — Completed January 9, 2025
-- [x] **Supabase client configured** — Completed January 9, 2025
-- [x] **TypeScript types defined** — Completed January 9, 2025
+### New Pages (src/app/(dashboard)/)
+- `layout.tsx` — Dashboard layout with sidebar
+- `dashboard/page.tsx` — Main dashboard with stats
+- `upload/page.tsx` — PDF upload with drag-and-drop
+- `models/page.tsx` — Model selection with filtering
+- `benchmarks/page.tsx` — Benchmark listing
+- `benchmarks/new/page.tsx` — Create new benchmark
+- `benchmarks/[id]/page.tsx` — View benchmark results
+- `costs/page.tsx` — Cost analysis
+- `history/page.tsx` — Activity history
+- `settings/page.tsx` — Settings page
+
+### New API Routes (src/app/api/)
+- `models/route.ts` — GET models list
+- `forms/route.ts` — GET forms list
+- `forms/upload/route.ts` — POST upload PDF
+- `extract/route.ts` — POST run extraction
+- `benchmark/route.ts` — GET/POST benchmarks
+- `benchmark/[id]/results/route.ts` — GET benchmark results
+
+### New Components (src/components/)
+- `layout/sidebar.tsx` — Dashboard sidebar navigation
+- `layout/dashboard-layout.tsx` — Dashboard layout wrapper
+- `ui/button.tsx` — Reusable button component
+
+### New Utilities (src/lib/)
+- `utils.ts` — Common utilities (cn, formatCost, etc.)
+
+### Modified Files
+- `src/app/page.tsx` — Now redirects to /dashboard
+- `src/lib/supabase/server.ts` — Simplified typing for demo
+- `src/types/database.ts` — Made user_id optional for demo
 
 ---
 
 ## Session Notes
 
-### January 9, 2025 Session — Initial Setup
+### January 9, 2025 Session 2 — Phase 1 Implementation
+**Duration:** ~45 minutes
+**Phase:** Phase 1 - Foundation
+
+**What was accomplished:**
+1. Added OpenRouter API key to .env.local and Vercel
+2. Installed UI dependencies (lucide-react, react-dropzone, etc.)
+3. Created complete dashboard UI with 8 pages
+4. Created 6 API endpoints for models, forms, extraction, benchmarks
+5. Fixed TypeScript build errors (Zod .issues, Supabase client typing)
+6. Successfully deployed to Vercel production
+
+**Technical decisions:**
+- Used `any` type for Supabase client to bypass complex generic typing for demo
+- Made user_id optional in database types for demo mode without auth
+- Used react-dropzone for PDF upload with progress indicators
+- Implemented background benchmark processing (fire-and-forget pattern)
+
+**Build issues resolved:**
+- Zod v4 uses `.issues` not `.errors` for validation errors
+- Supabase SSR client has complex generics that require exact Database type match
+
+**Next session should:**
+1. Run database migration in Supabase SQL Editor
+2. Create storage bucket for form uploads
+3. Test complete flow: Upload PDF → Create Benchmark → View Results
+4. Add authentication (if needed)
+
+---
+
+### January 9, 2025 Session 1 — Initial Setup
 **Duration:** ~30 minutes
 **Phase:** Pre-Phase 1 → Phase 1 Ready
 
 **What was accomplished:**
-1. Created project structure at `/Users/yndr/ai-comparison`
-2. Initialized Next.js 16 with TypeScript, Tailwind, App Router
-3. Installed Vercel AI SDK and all provider packages:
-   - @ai-sdk/openai
-   - @ai-sdk/anthropic
-   - @ai-sdk/google
-   - @ai-sdk/openai-compatible (for Groq, xAI, Mistral, Together, Fireworks)
-4. Installed Supabase SSR and Zod
-5. Created all 9 project docs based on template:
-   - CLAUDE.md (project context)
-   - PROJECT-PLAN.md (4 phases)
-   - PROJECT-INTERVIEW.md (completed with meeting context)
-   - TASKS.md (this file)
-   - SCHEMA.md (6 tables)
-   - DECISIONS.md (8 architectural decisions)
-   - API-CONTRACTS.md (full endpoint specs)
-   - AGENT-BEHAVIOR.md (tracking config)
-   - DOC-ENFORCEMENT.md (rules for Claude)
-   - ENV-TEMPLATE.md (environment variables)
-6. Created code infrastructure:
-   - src/lib/ai/providers.ts — 15 models across 7 providers
-   - src/lib/ai/extract.ts — Extraction service
-   - src/lib/supabase/client.ts — Browser client
-   - src/lib/supabase/server.ts — Server client
-   - src/types/database.ts — TypeScript types for all tables
+- Created project structure at `/Users/yndr/ai-comparison`
+- Initialized Next.js 16 with TypeScript, Tailwind, App Router
+- Installed Vercel AI SDK and all provider packages
+- Created all 9 project docs
+- Created provider registry with 22 models via OpenRouter
+- Created extraction service
 
 **Key context from meeting:**
 - Blake's team processes hundreds of insurance intake forms
 - Currently using OpenAI 4.2 at ~$1/file
-- OpenAI 5.2 can do it for ~$0.42/file
 - Want to test ALL models to find best accuracy/cost ratio
-- Forms have standard structured fields + freeform text
-- No ground truth — comparing outputs against baseline
-- Volume: 1,000+ forms is acceptable for benchmarking
-
-**Models configured:**
-- OpenAI: gpt-4o, gpt-4o-mini, gpt-4-turbo, o1-mini, o3-mini
-- Anthropic: claude-3-5-sonnet, claude-3-haiku
-- Google: gemini-1.5-pro, gemini-1.5-flash, gemini-2.0-flash-exp
-- Groq: llama-3.1-70b, llama-3.1-8b
-- xAI: grok-2-latest
-- Mistral: mistral-large, mistral-small
-
-**Decisions made:**
-- Use Vercel AI SDK for unified LLM interface (DECISION-001)
-- Compare against baseline (no ground truth) (DECISION-002)
-- Structured JSON + Freeform text output (DECISION-003)
-- Store all raw responses (DECISION-004)
-- Use Supabase Storage for PDFs (DECISION-005)
-- Batch processing with queue pattern (DECISION-006)
-- Server Components by default (DECISION-007)
-- Use Supabase Auth (DECISION-008)
-
-**Next session should:**
-1. Create Supabase project and run schema migration
-2. Add API keys to .env.local
-3. Build the form upload UI
-4. Create the API routes
-5. Get first extraction working end-to-end
