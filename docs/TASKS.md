@@ -1,34 +1,30 @@
 # Current Tasks
 
 **Last Updated:** January 9, 2025
-**Current Phase:** Phase 1 - Foundation
+**Current Phase:** Phase 1 - Foundation (COMPLETE)
 
 ---
 
 ## In Progress
 
-### Manual Setup Steps Required
+### Investigate Structured Extraction Issue
 - **Started:** January 9, 2025
-- **Context:** Database schema and storage bucket need to be created via Supabase Dashboard
-- **Status:** Ready for manual execution
-
-**Steps to complete:**
-
-1. **Apply Database Migration:**
-   - Go to https://supabase.com/dashboard/project/rstpvkotrasqzwgamuqf/sql/new
-   - Copy contents of `supabase/migrations/20250109_001_initial_schema.sql`
-   - Click "Run" to execute
-
-2. **Create Storage Bucket:**
-   - Go to https://supabase.com/dashboard/project/rstpvkotrasqzwgamuqf/storage/buckets
-   - Click "New bucket"
-   - Name: `forms`
-   - Public: No (private bucket)
-   - Click "Create bucket"
+- **Context:** Freeform extraction works, but structured extraction (generateObject) returns null
+- **Status:** Non-blocking - freeform extraction is working
 
 ---
 
 ## Completed This Session (January 9, 2025)
+
+### Session 3 - End-to-End Testing
+- [x] Applied database migration via Supabase SQL Editor
+- [x] Created `forms` storage bucket with RLS policies (SELECT, INSERT, UPDATE, DELETE)
+- [x] Fixed upload button not triggering file uploads (async state bug)
+- [x] Fixed PDF text extraction (switched from pdf-parse to unpdf for Turbopack compatibility)
+- [x] Successfully tested end-to-end flow:
+  - Upload PDF form → Stored in Supabase Storage
+  - Create benchmark with GPT-4o Mini → Extracts text from PDF
+  - View results → Freeform extraction returned comprehensive summary
 
 ### Phase 1 UI and API Implementation
 - [x] Created dashboard layout with sidebar navigation
@@ -167,3 +163,39 @@
 - Blake's team processes hundreds of insurance intake forms
 - Currently using OpenAI 4.2 at ~$1/file
 - Want to test ALL models to find best accuracy/cost ratio
+
+---
+
+### January 9, 2025 Session 3 — End-to-End Testing
+**Duration:** ~30 minutes
+**Phase:** Phase 1 - Foundation → Phase 1 Complete
+
+**What was accomplished:**
+1. Applied database migration via Supabase Dashboard SQL Editor
+2. Created `forms` storage bucket with full RLS policies
+3. Fixed upload button bug (async state update issue)
+4. Fixed PDF extraction (replaced pdf-parse with unpdf for ESM/Turbopack compatibility)
+5. Tested complete flow with sample insurance form
+
+**Bugs fixed:**
+- **Upload button not triggering:** Loop checked `uploadFile.status !== "uploading"` but React state was async. Fixed by capturing pending files array before state update.
+- **Build error with pdf-parse:** Turbopack couldn't resolve default export. Replaced with `unpdf` which properly supports ESM.
+
+**Test results:**
+- **PDF:** EFS_GEN_ICF_IS.pdf (243.5 KB insurance form)
+- **Model:** GPT-4o Mini via OpenRouter
+- **Cost:** $0.0008
+- **Duration:** ~25 seconds
+- **Freeform output:** ✅ Comprehensive summary of form contents
+- **Structured output:** ❌ Returned null (needs investigation)
+
+**Technical notes:**
+- `unpdf` extracts PDF text as string array (one per page), joined with `\n`
+- The `extractFull` function marks result as failed if EITHER structured or freeform fails
+- Need to investigate why `generateObject` fails while `generateText` succeeds
+
+**Next session should:**
+1. Investigate structured extraction issue (generateObject with OpenRouter)
+2. Consider making partial success acceptable (freeform only)
+3. Test with multiple models to compare results
+4. Begin Phase 2 features if extraction is stable
