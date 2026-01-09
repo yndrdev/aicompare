@@ -38,20 +38,20 @@ export default function UploadPage() {
   };
 
   const uploadFiles = async () => {
-    if (files.length === 0) return;
+    const pendingFiles = files.filter((f) => f.status === "pending");
+    if (pendingFiles.length === 0) return;
 
     setIsUploading(true);
 
-    // Update all files to uploading status
+    // Update all pending files to uploading status
     setFiles((prev) =>
       prev.map((f) =>
         f.status === "pending" ? { ...f, status: "uploading" as const } : f
       )
     );
 
-    // Upload each file
-    for (const uploadFile of files) {
-      if (uploadFile.status !== "uploading") continue;
+    // Upload each pending file
+    for (const uploadFile of pendingFiles) {
 
       try {
         const formData = new FormData();
