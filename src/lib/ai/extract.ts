@@ -4,9 +4,9 @@
  * Handles PDF form extraction using any configured LLM model.
  */
 
-import { generateText, generateObject } from "ai";
+import { generateText } from "ai";
 import { z } from "zod";
-import { getModel, calculateCost, MODELS } from "./providers";
+import { getModel, calculateCost } from "./providers";
 
 // Schema for structured insurance form extraction
 export const InsuranceFormSchema = z.object({
@@ -80,8 +80,38 @@ const FREEFORM_EXTRACTION_PROMPT = `Extract and summarize all text content from 
 Include any medical history, notes, or narrative sections verbatim.
 Organize the content logically and preserve important details.`;
 
+const JSON_EXTRACTION_PROMPT = `You are an expert at extracting information from insurance intake forms.
+Extract all relevant information from this form and return it as a valid JSON object.
+
+Return ONLY a JSON object (no markdown, no explanation) with these fields (omit any that aren't found):
+{
+  "patientName": "string",
+  "dateOfBirth": "string",
+  "socialSecurityNumber": "string",
+  "address": "string",
+  "city": "string",
+  "state": "string",
+  "zipCode": "string",
+  "phone": "string",
+  "email": "string",
+  "insuranceCompany": "string",
+  "policyNumber": "string",
+  "groupNumber": "string",
+  "subscriberName": "string",
+  "subscriberDOB": "string",
+  "relationship": "string",
+  "primaryPhysician": "string",
+  "referringPhysician": "string",
+  "reasonForVisit": "string",
+  "currentMedications": ["string"],
+  "allergies": ["string"],
+  "medicalConditions": ["string"],
+  "additionalFields": {"key": "value"}
+}`;
+
 /**
  * Extract structured data from a PDF form using specified model
+ * Uses generateText with JSON parsing for better provider compatibility
  */
 export async function extractStructured(
   options: ExtractionOptions
@@ -91,34 +121,52 @@ export async function extractStructured(
 
   try {
     const model = getModel(modelId);
-    const modelDef = MODELS.find((m) => m.id === modelId);
 
-    // Check if model supports JSON mode
-    if (!modelDef?.supportsJsonMode) {
-      return {
-        success: false,
-        error: `Model ${modelId} does not support JSON mode`,
-        inputTokens: 0,
-        outputTokens: 0,
-        totalTokens: 0,
-        cost: 0,
-        latencyMs: Date.now() - startTime,
-      };
-    }
-
-    const result = await generateObject({
+    const result = await generateText({
       model,
-      schema: InsuranceFormSchema,
-      prompt: `${customPrompt || DEFAULT_EXTRACTION_PROMPT}\n\nForm content:\n${pdfContent}`,
+      prompt: `${customPrompt || JSON_EXTRACTION_PROMPT}\n\nForm content:\n${pdfContent}`,
     });
 
     const latencyMs = Date.now() - startTime;
     const inputTokens = result.usage?.inputTokens || 0;
     const outputTokens = result.usage?.outputTokens || 0;
 
+    // Parse the JSON response
+    let structuredOutput: InsuranceFormData | undefined;
+    try {
+      // Clean the response - remove markdown code blocks if present
+      let jsonText = result.text.trim();
+      if (jsonText.startsWith("```json")) {
+        jsonText = jsonText.slice(7);
+      } else if (jsonText.startsWith("```")) {
+        jsonText = jsonText.slice(3);
+      }
+      if (jsonText.endsWith("```")) {
+        jsonText = jsonText.slice(0, -3);
+      }
+      jsonText = jsonText.trim();
+
+      const parsed = JSON.parse(jsonText);
+      structuredOutput = InsuranceFormSchema.parse(parsed);
+    } catch (parseError) {
+      console.error("JSON parsing error:", parseError);
+      // Return success with raw text if JSON parsing fails
+      return {
+        success: true,
+        freeformOutput: result.text,
+        rawResponse: result,
+        inputTokens,
+        outputTokens,
+        totalTokens: inputTokens + outputTokens,
+        cost: calculateCost(modelId, inputTokens, outputTokens),
+        latencyMs,
+        error: "JSON parsing failed - returning raw text",
+      };
+    }
+
     return {
       success: true,
-      structuredOutput: result.object,
+      structuredOutput,
       rawResponse: result,
       inputTokens,
       outputTokens,
