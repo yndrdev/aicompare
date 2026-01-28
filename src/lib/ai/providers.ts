@@ -101,17 +101,6 @@ export const MODELS: ModelDefinition[] = [
     supportsJsonMode: false,
     description: "Reasoning model for complex tasks",
   },
-  {
-    id: "openai/o1-mini",
-    provider: "openai",
-    displayName: "o1 Mini",
-    inputCostPer1k: 0.003,
-    outputCostPer1k: 0.012,
-    contextWindow: 128000,
-    supportsVision: false,
-    supportsJsonMode: false,
-    description: "Smaller reasoning model",
-  },
 
   // ============ Anthropic ============
   {
