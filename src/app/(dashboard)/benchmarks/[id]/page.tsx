@@ -7,7 +7,6 @@ import {
   Loader2,
   CheckCircle,
   XCircle,
-  Clock,
   Download,
   Trophy,
   Zap,
@@ -57,7 +56,6 @@ export default function BenchmarkResultsPage({
   const [benchmark, setBenchmark] = useState<BenchmarkRun | null>(null);
   const [results, setResults] = useState<ExtractionResult[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [selectedModel, setSelectedModel] = useState<string | null>(null);
 
   useEffect(() => {
     fetchResults();
@@ -76,10 +74,6 @@ export default function BenchmarkResultsPage({
       const data = await response.json();
       setBenchmark(data.benchmark);
       setResults(data.results || []);
-      if (!selectedModel && data.results?.length > 0) {
-        const models = [...new Set(data.results.map((r: ExtractionResult) => r.model_id))];
-        setSelectedModel(models[0] as string);
-      }
     } catch (error) {
       console.error("Failed to fetch results:", error);
     } finally {
@@ -361,17 +355,10 @@ export default function BenchmarkResultsPage({
               {modelStats.map((stats) => (
                 <tr
                   key={stats.modelId}
-                  className="cursor-pointer hover:bg-gray-50"
-                  onClick={() => setSelectedModel(stats.modelId)}
+                  className="hover:bg-gray-50"
                 >
                   <td className="whitespace-nowrap px-4 py-4">
-                    <span
-                      className={`font-medium ${
-                        selectedModel === stats.modelId
-                          ? "text-blue-600"
-                          : "text-gray-900"
-                      }`}
-                    >
+                    <span className="font-medium text-gray-900">
                       {stats.modelId.split("/").pop()}
                     </span>
                   </td>
@@ -397,37 +384,6 @@ export default function BenchmarkResultsPage({
         </div>
       </div>
 
-      {/* Sample Output */}
-      {selectedModel && resultsByModel[selectedModel]?.length > 0 && (
-        <div className="rounded-lg bg-white p-6 shadow">
-          <h2 className="text-lg font-semibold text-gray-900">
-            Sample Output: {selectedModel.split("/").pop()}
-          </h2>
-          <div className="mt-4 grid gap-4 lg:grid-cols-2">
-            <div>
-              <h3 className="text-sm font-medium text-gray-700">
-                Structured Output
-              </h3>
-              <pre className="mt-2 max-h-96 overflow-auto rounded-lg bg-gray-900 p-4 text-sm text-green-400">
-                {JSON.stringify(
-                  resultsByModel[selectedModel][0]?.structured_output,
-                  null,
-                  2
-                )}
-              </pre>
-            </div>
-            <div>
-              <h3 className="text-sm font-medium text-gray-700">
-                Freeform Output
-              </h3>
-              <pre className="mt-2 max-h-96 overflow-auto whitespace-pre-wrap rounded-lg bg-gray-900 p-4 text-sm text-gray-300">
-                {resultsByModel[selectedModel][0]?.freeform_output ||
-                  "No freeform output"}
-              </pre>
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
 }
