@@ -50,7 +50,7 @@ export interface ModelDefinition {
 }
 
 /**
- * Model registry with OpenRouter pricing (as of January 2025)
+ * Model registry with OpenRouter pricing (as of January 2026)
  * Prices from: https://openrouter.ai/models
  *
  * Note: OpenRouter adds a small markup. Check their site for current prices.
@@ -115,6 +115,17 @@ export const MODELS: ModelDefinition[] = [
 
   // ============ Anthropic ============
   {
+    id: "anthropic/claude-sonnet-4",
+    provider: "anthropic",
+    displayName: "Claude Sonnet 4",
+    inputCostPer1k: 0.003,
+    outputCostPer1k: 0.015,
+    contextWindow: 200000,
+    supportsVision: true,
+    supportsJsonMode: true,
+    description: "Latest Claude Sonnet model",
+  },
+  {
     id: "anthropic/claude-3.5-sonnet",
     provider: "anthropic",
     displayName: "Claude 3.5 Sonnet",
@@ -124,6 +135,17 @@ export const MODELS: ModelDefinition[] = [
     supportsVision: true,
     supportsJsonMode: true,
     description: "Best balance of speed and intelligence",
+  },
+  {
+    id: "anthropic/claude-3.5-haiku",
+    provider: "anthropic",
+    displayName: "Claude 3.5 Haiku",
+    inputCostPer1k: 0.0008,
+    outputCostPer1k: 0.004,
+    contextWindow: 200000,
+    supportsVision: true,
+    supportsJsonMode: true,
+    description: "Fast and affordable Claude",
   },
   {
     id: "anthropic/claude-3-haiku",
@@ -136,51 +158,29 @@ export const MODELS: ModelDefinition[] = [
     supportsJsonMode: true,
     description: "Fastest Claude model",
   },
-  {
-    id: "anthropic/claude-3-opus",
-    provider: "anthropic",
-    displayName: "Claude 3 Opus",
-    inputCostPer1k: 0.015,
-    outputCostPer1k: 0.075,
-    contextWindow: 200000,
-    supportsVision: true,
-    supportsJsonMode: true,
-    description: "Most capable Claude model",
-  },
 
   // ============ Google ============
   {
-    id: "google/gemini-pro-1.5",
+    id: "google/gemini-2.5-pro",
     provider: "google",
-    displayName: "Gemini 1.5 Pro",
+    displayName: "Gemini 2.5 Pro",
     inputCostPer1k: 0.00125,
-    outputCostPer1k: 0.005,
-    contextWindow: 2000000,
-    supportsVision: true,
-    supportsJsonMode: true,
-    description: "2M context window, strong reasoning",
-  },
-  {
-    id: "google/gemini-flash-1.5",
-    provider: "google",
-    displayName: "Gemini 1.5 Flash",
-    inputCostPer1k: 0.000075,
-    outputCostPer1k: 0.0003,
+    outputCostPer1k: 0.01,
     contextWindow: 1000000,
     supportsVision: true,
     supportsJsonMode: true,
-    description: "Fast and affordable",
+    description: "Google's most capable model",
   },
   {
-    id: "google/gemini-2.0-flash-exp:free",
+    id: "google/gemini-2.5-flash",
     provider: "google",
-    displayName: "Gemini 2.0 Flash (Free)",
-    inputCostPer1k: 0,
-    outputCostPer1k: 0,
+    displayName: "Gemini 2.5 Flash",
+    inputCostPer1k: 0.00015,
+    outputCostPer1k: 0.0006,
     contextWindow: 1000000,
     supportsVision: true,
     supportsJsonMode: true,
-    description: "Latest Gemini, free tier",
+    description: "Fast and affordable Gemini",
   },
 
   // ============ Meta (Llama) ============
@@ -220,7 +220,7 @@ export const MODELS: ModelDefinition[] = [
 
   // ============ Mistral ============
   {
-    id: "mistralai/mistral-large-2411",
+    id: "mistralai/mistral-large-2512",
     provider: "mistral",
     displayName: "Mistral Large",
     inputCostPer1k: 0.002,
@@ -231,59 +231,59 @@ export const MODELS: ModelDefinition[] = [
     description: "Mistral's flagship model",
   },
   {
-    id: "mistralai/mistral-small-2409",
+    id: "mistralai/mistral-small-3.2-24b-instruct",
     provider: "mistral",
-    displayName: "Mistral Small",
-    inputCostPer1k: 0.0002,
-    outputCostPer1k: 0.0006,
+    displayName: "Mistral Small 3.2",
+    inputCostPer1k: 0.0001,
+    outputCostPer1k: 0.0003,
     contextWindow: 32000,
     supportsVision: false,
     supportsJsonMode: true,
     description: "Efficient for simple tasks",
   },
-  {
-    id: "mistralai/mistral-nemo",
-    provider: "mistral",
-    displayName: "Mistral Nemo",
-    inputCostPer1k: 0.00013,
-    outputCostPer1k: 0.00013,
-    contextWindow: 128000,
-    supportsVision: false,
-    supportsJsonMode: true,
-    description: "12B model, great value",
-  },
 
   // ============ xAI ============
   {
-    id: "x-ai/grok-2-1212",
+    id: "x-ai/grok-3",
     provider: "xai",
-    displayName: "Grok 2",
-    inputCostPer1k: 0.002,
-    outputCostPer1k: 0.01,
+    displayName: "Grok 3",
+    inputCostPer1k: 0.003,
+    outputCostPer1k: 0.015,
     contextWindow: 131072,
     supportsVision: true,
     supportsJsonMode: true,
-    description: "xAI's latest model",
+    description: "xAI's flagship model",
+  },
+  {
+    id: "x-ai/grok-3-mini",
+    provider: "xai",
+    displayName: "Grok 3 Mini",
+    inputCostPer1k: 0.0003,
+    outputCostPer1k: 0.0005,
+    contextWindow: 131072,
+    supportsVision: false,
+    supportsJsonMode: true,
+    description: "Fast reasoning model from xAI",
   },
 
   // ============ DeepSeek ============
   {
-    id: "deepseek/deepseek-chat",
+    id: "deepseek/deepseek-chat-v3.1",
     provider: "deepseek",
-    displayName: "DeepSeek V3",
-    inputCostPer1k: 0.00014,
-    outputCostPer1k: 0.00028,
+    displayName: "DeepSeek V3.1",
+    inputCostPer1k: 0.0001,
+    outputCostPer1k: 0.0003,
     contextWindow: 64000,
     supportsVision: false,
     supportsJsonMode: true,
     description: "Extremely cheap, surprisingly capable",
   },
   {
-    id: "deepseek/deepseek-r1",
+    id: "deepseek/deepseek-r1-0528",
     provider: "deepseek",
     displayName: "DeepSeek R1",
-    inputCostPer1k: 0.00055,
-    outputCostPer1k: 0.00219,
+    inputCostPer1k: 0.0008,
+    outputCostPer1k: 0.002,
     contextWindow: 64000,
     supportsVision: false,
     supportsJsonMode: true,
@@ -301,17 +301,6 @@ export const MODELS: ModelDefinition[] = [
     supportsVision: false,
     supportsJsonMode: true,
     description: "Alibaba's flagship model",
-  },
-  {
-    id: "qwen/qwq-32b-preview",
-    provider: "qwen",
-    displayName: "QwQ 32B (Reasoning)",
-    inputCostPer1k: 0.00012,
-    outputCostPer1k: 0.00018,
-    contextWindow: 32768,
-    supportsVision: false,
-    supportsJsonMode: true,
-    description: "Reasoning model from Alibaba",
   },
 ];
 
