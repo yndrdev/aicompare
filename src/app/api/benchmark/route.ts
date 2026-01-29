@@ -1,9 +1,12 @@
-import { NextResponse } from "next/server";
+import { NextResponse, after } from "next/server";
 import { z } from "zod";
 import { createClient } from "@/lib/supabase/server";
 import { extractFull } from "@/lib/ai/extract";
 import { MODELS, calculateCost } from "@/lib/ai/providers";
 import { extractText } from "unpdf";
+
+// Allow up to 300s for benchmark processing (capped by Vercel plan limits)
+export const maxDuration = 300;
 
 const CreateBenchmarkSchema = z.object({
   name: z.string().optional(),
@@ -100,11 +103,15 @@ export async function POST(request: Request) {
       );
     }
 
-    // Start processing in background (for now, return immediately)
-    // In a real app, this would be a background job
-    processBenchmark(supabase, benchmarkRun.id, modelIds, formIds).catch(
-      console.error
-    );
+    // Process in background using Next.js after() to keep the function alive
+    after(async () => {
+      try {
+        const bgSupabase = await createClient();
+        await processBenchmark(bgSupabase, benchmarkRun.id, modelIds, formIds);
+      } catch (err) {
+        console.error("Background benchmark processing failed:", err);
+      }
+    });
 
     return NextResponse.json({
       success: true,

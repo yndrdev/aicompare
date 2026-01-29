@@ -3,6 +3,9 @@ import { z } from "zod";
 import { extractFull, extractStructured, extractFreeform } from "@/lib/ai/extract";
 import { MODELS } from "@/lib/ai/providers";
 
+// Allow up to 60s for individual extractions
+export const maxDuration = 60;
+
 const ExtractRequestSchema = z.object({
   modelId: z.string(),
   content: z.string(), // Base64 encoded PDF or text content
