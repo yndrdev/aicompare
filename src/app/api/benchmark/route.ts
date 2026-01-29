@@ -175,33 +175,39 @@ async function processBenchmark(
             pdfContent: content,
           });
 
-          // Save result
-          await supabase.from("extraction_results").insert({
+          // Save result (omit raw_response - too large for JSONB)
+          const { error: insertError } = await supabase.from("extraction_results").insert({
             benchmark_run_id: benchmarkId,
             form_id: formId,
             model_id: modelId,
             status: result.success ? "success" : "error",
-            structured_output: result.structuredOutput,
-            freeform_output: result.freeformOutput,
-            raw_response: result.rawResponse,
+            structured_output: result.structuredOutput || null,
+            freeform_output: result.freeformOutput || null,
             latency_ms: result.latencyMs,
             input_tokens: result.inputTokens,
             output_tokens: result.outputTokens,
             total_tokens: result.totalTokens,
             cost: result.cost,
-            error_message: result.error,
+            error_message: result.error || null,
           });
+
+          if (insertError) {
+            console.error(`DB insert error for ${modelId}:`, insertError);
+          }
 
           totalCost += result.cost;
         } catch (err) {
           console.error(`Extraction error for ${modelId}:`, err);
-          await supabase.from("extraction_results").insert({
+          const { error: errInsertError } = await supabase.from("extraction_results").insert({
             benchmark_run_id: benchmarkId,
             form_id: formId,
             model_id: modelId,
             status: "error",
             error_message: err instanceof Error ? err.message : "Unknown error",
           });
+          if (errInsertError) {
+            console.error(`DB error insert also failed for ${modelId}:`, errInsertError);
+          }
         }
       }
 
