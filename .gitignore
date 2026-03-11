@@ -42,3 +42,14 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# Claude / AI assistant config
+.claude.json
+.claude.json.backup
+.kilocode/
+
+# Desktop artifacts
+Desktop/
+
+# Supabase temp files
+supabase/.temp/
